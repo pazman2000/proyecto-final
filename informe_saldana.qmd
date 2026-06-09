@@ -1,0 +1,303 @@
+---
+title: "Evaluación del balance hídrico y dinámica de sequía en la cuenca baja del río Saldaña (Tolima) mediante Google Earth Engine"
+author:
+  - "Valentina Ramírez Loaiza"
+  - "Raul Andres Posada Maldonado"
+institute: "Universidad Nacional de Colombia"
+lang: es
+format:
+  pdf:
+    pdf-engine: lualatex
+    number-sections: true
+    toc: false
+    colorlinks: true
+    geometry:
+      - margin=2.5cm
+---
+
+## Abstract
+
+The water balance is fundamental to the water cycle, but its alteration by climatic and anthropogenic factors generates droughts that impact ecosystems. Given the limited spatial coverage of traditional meteorological stations, satellite remote sensing emerges as a solution by offering global coverage, temporal-spatial consistency, and data availability. Currently, the state of knowledge focuses on massive geoprocessing in the cloud; platforms such as Google Earth Engine (GEE) allow the integration of multiple satellite catalogs to efficiently model hydrological dynamics. The present study replicates and adapts the methodology proposed in Chapter A2.5 of the book Cloud-Based Remote Sensing with Google Earth Engine to evaluate the water balance and drought dynamics in the lower basin of the Saldaña River (Tolima, Colombia). The methodology was developed in GEE, where the TerraClimate collection was used to obtain monthly hydroclimatic variables (precipitation, evapotranspiration, water deficit, and soil moisture) for the period 2015--2024. Additionally, the Standardized Precipitation-Evapotranspiration Index (SPEI) at a 6-month scale and the land cover map from MapBiomas Colombia (Collection 3.0, year 2023) were incorporated. The main results show a negative water balance across the entire basin. Episodes of moderate to severe drought were identified using the SPEI, particularly in the years 2015--2016, 2019-- 2020, and late 2023. The strong influence of land cover on the water balance was confirmed, highlighting the basin's water vulnerability, especially in areas dedicated to rice cultivation.
+
+**Keywords:** water balance, Standardized Precipitation-Evapotranspiration Index (SPEI), Google Earth Engine, MapBiomas.
+
+# Introducción
+
+El agua constituye uno de los recursos naturales más vitales para la humanidad, esencial no solo para la agricultura, la industria y la economía, sino también para el funcionamiento de los ecosistemas terrestres y acuáticos (Chartzoulakis & Bertaki, 2015; Shit et al., 2024). Comprender las interacciones entre los factores climáticos, el suelo y la cobertura vegetal es indispensable para analizar los procesos hidrológicos. En este sentido, el balance hídrico se consolida como una herramienta clave, tanto para entender el funcionamiento de los ecosistemas y la hidrología de una cuenca, como para diseñar estrategias de gestión y conservación del recurso hídrico (Jian et al., 2015). Por su parte, la sequía está estrechamente vinculada a estos procesos, ya que se asocia con la escasez de precipitaciones y la reducción
+
+de la humedad del suelo (Cao et al., 2019). Por lo anterior, resulta fundamental evaluar variables como la precipitación, la evapotranspiración y los índices de sequía para abordar de manera efectiva los desafíos actuales en el manejo del agua.
+
+El balance hídrico se define como la diferencia entre los ingresos y egresos de agua en un sistema determinado. En el contexto de una cuenca, se calcula como la diferencia entre la precipitación (P) y la evapotranspiración actual (ETA). Valores negativos en este balance indican condiciones de déficit hídrico, mientras que valores positivos reflejan un excedente de agua.
+
+La evapotranspiración (ET) representa la cantidad de agua que pasa de la superficie terrestre a la atmósfera a través de la evaporación del suelo y la transpiración de las plantas (Allen et al., 1998; Yousefi et al., 2022). Esta puede expresarse de dos formas: como evapotranspiración potencial (ETP), que corresponde a la cantidad de agua máxima que se podría perder por evaporación (del suelo) y transpiración (plantas) si el suelo permaneciera en capacidad de campo (Thornthwaite, 1948), o como evapotranspiración actual (ETA), que determina la cantidad de agua que realmente se evapora y transpira, limitada por la disponibilidad de humedad en el suelo. Dado que tanto la ETP como la ETA están fuertemente influenciadas por el tipo de cobertura vegetal, es indispensable considerar la vegetación al interpretar los resultados del balance hídrico.
+
+Por otra parte, los índices de sequía estandarizados, como el Índice Estandarizado de Precipitación-Evapotranspiración (SPEI), permiten cuantificar la severidad de la sequía al estandarizar la diferencia entre la precipitación (aporte de agua) y la evapotranspiración potencial (demanda atmosférica de agua) (Cao et al., 2019; He et al., 2024). Su principal ventaja radica en su carácter multiescalar, ya que puede calcularse a diferentes escalas temporales según el tipo de sequía que se desee analizar (meteorológica, agrícola o hidrológica), lo que lo hace especialmente útil para estudios regionales (Vicente-Serrano et al., 2010).
+
+En Colombia, los eventos de sequía y la alta variabilidad climática han impactado regiones andinas como el Tolima, donde la agricultura depende del recurso hídrico, con 60.471 hectáreas (ha) de superficie irrigada, de las cuales 54.485 ha son distritos de riego activos, dedicados principalmente al cultivo del arroz. Dentro de este departamento, existen los distritos Usocoello y Usosaldaña, siendo lo más representativos en la producción de arroz (Agrosavia, 2021). El distrito Usosaldaña, abarca la cuenca del río Saldaña, destacada como la más extensa, con una superficie cerca del 9.954 km^2^, abastece de agua al 46% de la población tolimense y las actividades económicas clave, como el cultivo del arroz, café, algodón y ganadería extensiva (CORTOLIMA, 2010; ANLA, 2021; Riaño & Artunduaga, 2022). En zonas como esta, se requiere determinar el balance hídrico y la evaluación y determinación de la sequía debido a su importancia para la planificación agrícola, la gestión del riego y la adaptación al cambio climático.
+
+Existen diferentes métodos para determinar estos parámetros, tradicionalmente basados en datos de estaciones climatológicas de entidades como el IDEAM y CORTOLIMA. Sin embargo, estas estaciones presentan limitaciones importantes, tales como escasa densidad
+
+espacial, series temporales incompletas, inconsistencias por fallos operativos y falta de cobertura territorial. Ante estas restricciones, la percepción remota ha emergido como una tecnología poderosa para observar la Tierra de manera continua en el tiempo y el espacio, proporcionando series temporales de variables a nivel de superficie que no están fácilmente disponibles con métodos convencionales (Cáceres et al., 2015; Shit et al., 2024; Yousefi et al., 2022). Sin embargo, el procesamiento de estos grandes volúmenes de datos implica desafíos computacionales elevados. En este contexto, Google Earth Engine (GEE) representa una plataforma que ofrece acceso gratuito y en la nube a catálogos masivos de datos satelitales, permitiendo su análisis de forma sencilla y escalable (Yousefi et al., 2022).
+
+El presente trabajo replica y modifica el enfoque propuesta en el capítulo A2.5 ("Water Balance and Drought") del libro Cloud-Based Remote Sensing with Google Earth Engine (Poortinga et al., 2024), remplazando las fuentes (CHIRPS +MOD16) por la colección TerraClimate, e incorporando Índice Estandarizado de Precipitación y Evapotranspiración (SPEI) de 6 meses y la cobertura del suelo de MapBiomas Colombia 2023.
+
+El objetivo general del estudio es evaluar el balance hídrico y la dinámica de sequía en la cuenca baja del río Saldaña (Tolima, Colombia) durante el periodo 2015-2024 mediante datos satelitales procesados en Google Earth Engine (GEE). Los objetivos específicos son: (1) Cuantificar las principales variables hidroclimáticas (precipitación, evapotranspiración potencial, evapotranspiración actual, déficit hídrico y humedad del suelo) en la cuenca baja del río Saldaña a partir de la colección TerraClimate para el periodo 2015-2025; (2) Calcular el balance hídrico y analizar la evolución temporal y espacial del índice estandarizado de sequía SPEI (escala de 6 meses), mediante la generación de series temporales y mapas de promedio multianual y (3) Caracterizar la cobertura y uso del suelo en la mediante el producto MapBiomas Colombia (Colección 3.0) y contrastar espacialmente estos patrones con las variables de balance hídrico y sequía determinadas previamente.
+
+# Materiales y métodos
+
+## Área de estudio
+El presente estudio se centró en la cuenca baja del río Saldaña (**Figura 1**), ubicada en el departamento del Tolima, Colombia. Esta subcuenca forma parte del Área Hidrográfica Magdalena-Cauca y corresponde a la subzona hidrográfica Bajo Saldaña (código 2208) (ANLA, 2021).
+
+De acuerdo con el Atlas Climatológico de Colombia (IDEAM, 2017), la zona presenta una amplia variedad de condiciones climáticas. El 19 % del área total corresponde a clima cálido semihúmedo y el 17 % a clima cálido semiárido. La temperatura media multianual oscila entre 8 °C y 28 °C, con valores más altos en las zonas de clima cálido semiárido (ANLA, 2021). El régimen de precipitación es de tipo bimodal, con una precipitación media multianual que varía entre 1.000 y 3.000 mm. Específicamente, la cuenca baja del río Saldaña se clasifica bajo el régimen Bimodal 6 (Bm6), caracterizado por dos periodos de menores precipitaciones (al inicio y a mitad del año). La estación seca más crítica ocurre entre junio y agosto, siendo más deficitaria que la del primer trimestre (IDEAM, 2017).
+
+![](figs/figura1.png){fig-align="center" width=85%}
+
+**Figura1.** Subzonas Hidrográficas que conforman el departamento del Tolima, Colombia.
+
+*En color fucsia se encuentra la cuenca baja del río Saldaña*. Fuente: (ANLA, 2021).
+
+El polígono de estudio se delimitó a partir de los datos abiertos de la Corporación Autónoma Regional del Tolima (CORTOLIMA). Se descargó la capa vectorial en formato shapefile (.shp) de la cuenca baja del río Saldaña, la cual fue reproyectada del sistema EPSG:3857 (WGS 84 / Pseudo-Mercator) al sistema geográfico EPSG:4326 (WGS 84) utilizando el software QGIS. Posteriormente, el archivo se cargó en Google Earth Engine como Asset y se definió como FeatureCollection con la ruta "projects/ee-valramirezlo/assets/cuenca_baja_saldana_4326". La delimitación final de la cuenca baja del río Saldaña en la plataforma GEE se muestra en la **Figura 2**.
+
+![](figs/figura2.png){fig-align="center" width=65%}
+
+**Figura 2.** Delimitación de la cuenca baja del río Saldaña en Google Earth Engine (GEE).
+
+Fuente: Elaboración propia con base en datos de CORTOLIMA (2024).
+
+## Datos
+
+Todo el procesamiento se realizó en la plataforma GEE. A continuación se describen las colecciones de datos empleadas:
+
+-   **TerraClimate** (IDAHO_EPSCOR/TERRACLIMATE)
+
+En contraste con el enfoque original que combinaba las colecciones CHIRPS (precipitación) y MOD16 (evapotranspiración) (Poortinga et al., 2024), en este estudio se utilizó como fuente única la colección TerraClimate. Esta decisión se fundamenta en sus ventajas: ofrece una resolución espacial de aproximadamente 4 km (frente a los 5 km de CHIRPS), proporciona variables calculadas de forma consistente dentro del mismo producto y reduce significativamente las posibles inconsistencias derivadas de combinar dos fuentes independientes (Abatzoglou et al., 2018).
+
+Las bandas seleccionadas fueron: precipitación (pr), evapotranspiración potencial (pet), evapotranspiración actual (aet), déficit hídrico (def) y humedad del suelo (soil). El período de análisis abarcó desde enero de 2015 hasta diciembre de 2024. Dado que los valores originales se encuentran escalados por un factor de 10, se aplicó un factor de corrección de
+
+0.1 para obtener unidades en mm/mes.
+
+-   **SPEI** (CSIC/SPEI/2_10)
+
+En lugar del índice de estrés hídrico (MSI) utilizado por Poortinga et al. (2024), se incorporó el índice Estandarizado de Precipitación y Evapotranspiración (SPEI) a escala de 6 meses. Este índice permite una evaluación más robusta de la sequía al considerar simultáneamente la precipitación y la evapotranspiración potencial a través del balance hídrico. A diferencia de índices basados únicamente en precipitación, el SPEI sustituye la precipitación por la diferencia estandarizada entre precipitación y evapotranspiración potencial, lo que lo hace más adecuado para detectar sequías meteorológicas, agrícolas e hidrológicas en diferentes escalas temporales (He et al., 2024).
+
+-   **MapBiomas Colombia** (Colección 3.0):
+
+Para relacionar los resultados hidrológicos con el uso actual del territorio, se utilizó el mapa de cobertura y uso del suelo del proyecto MapBiomas Colombia -- Colección 3.0 (año 2023). Este producto, generado mediante sensores remotos, Sistemas de Información Geográfica (SIG) y clasificación automatizada con el algoritmo Random Forest en GEE, ofrece una resolución espacial de 30 m y contempla 25 clases temáticas de cobertura del suelo. La Colección 3.0 abarca el período 1985-2023 y representa la serie histórica más actualizada disponible para Colombia (MapBiomas, 2024).
+
+## Procesamiento en Google Earth Engine
+
+El procesamiento se estructuró según cada objetivo específico establecido. A continuación, se presenta el flujo metodológico desarrollado.
+
+### Objetivo 1: cuantificar las variables hidroclimáticas
+Para la ejecución del primer objetivo se procesó la colección TerraClimate (IDAHO_EPSCOR/TERRACLIMATE) en GEE. El flujo de trabajo, representado en la **Figura 3**, se estructuró en cuatro etapas principales: preparación de datos, procesamiento de bandas, análisis espacial y generación de resultados finales. En la etapa de preparación de datos se cargó la colección, se filtraron las imágenes para el período 2015-2025, se estableció la frecuencia mensual y se aplicó el factor de escala de 0.1 con el fin de obtener valores reales en mm/mes. En el apartado de procesamiento de bandas, se seleccionaron las variables hidroclimáticas: precipitación (pr), evapotranspiración potencial (pet), evapotranspiración actual (aet), déficit hídrico (def) y humedad del suelo (soil). Finalmente, en el análisis espacial y resultados finales, todas las imágenes fueron recortadas al polígono de la cuenca y se generaron los mapas y series temporales.
+
+![](figs/figura3.png){fig-align="center" width=75%}
+
+**Figura 3.** Esquema del flujo de trabajo en Google Earth Engine para cuantificar las variables hidroclimáticas a partir de la colección TerraClimate. Fuente: Elaboración propia (NotebookKML).
+
+### Objetivo 2: Calcular el balance hídrico y analizar la evolución temporal y espacial del índice SPEI
+A partir de las variables hidroclimáticas obtenidas en el objetivo específico 1, se procedió a calcular el balance hídrico y el procesamiento del índice SPEI. El flujo de trabajo completo se representa en la **Figura 4** y se dividió en cuatro etapas principales: variables de TerraClimate, cálculo de balance hídrico, procesamiento de SPEI y recorte con resultados finales.
+
+En primer lugar, se cargaron las variables de TerraClimate (precipitación y evapotranspiración actual). El balance hídrico se calculó mediante la ecuación:
+
+$$\text{Balance hídrico} = \text{Precipitación} - \text{Evapotranspiración actual}$$
+
+Se incorporaron como bandas auxiliares el déficit hídrico y la humedad del suelo.
+
+Posteriormente, se cargó la colección SPEI (CSIC/SPEI/2_10), se filtró para el período 2015- 2025 y se seleccionó la banda SPEI_06_month. Todas las imágenes fueron recortadas al polígono de la cuenca baja del río Saldaña.
+
+Finalmente, se generaron los mapas de promedio multianual (2015-2025) y las series temporales mensuales tanto del balance hídrico como del índice SPEI.
+
+![](figs/figura4.png){fig-align="center" width=72%}
+
+**Figura 4.** Esquema del flujo de trabajo en Google Earth Engine para el cálculo del balance hídrico y el análisis del índice SPEI de 6 meses. Fuente: Elaboración propia (NotebookKML).
+
+### Objetivo 3: Caracterizar la cobertura vegetal
+Como se muestra en la Figura 5, la caracterización de la cobertura del suelo se realizó utilizando la Colección 3.0 de MapBiomas Colombia, disponible en Google Earth Engine mediante la ruta "projects/mapbiomas-colombia/assets/LULC/COLECCION3/INTEGRACION/COLOMBIA-1". Se seleccionó la banda classification_2023, se recortó la imagen al polígono de la cuenca baja y se aplicó la paleta oficial de colores. Posteriormente, se superpuso esta capa con los mapas de promedio multianual de balance hídrico, déficit hídrico y SPEI con el fin de realizar un análisis cualitativo de coincidencia espacial entre las clases de cobertura dominante y las condiciones hídricas de la zona.
+
+![](figs/figura5.png){fig-align="center" width=95%}
+
+**Figura 5.** Esquema del flujo de trabajo en Google Earth Engine para la caracterización de la cobertura en la cuenca baja del río Saldaña y su contraste con las variables de balance hídrico y sequía. Fuente: Elaboración propia (NotebookKML).
+
+# Resultados
+
+### Objetivo 1: cuantificar las variables hidroclimáticas
+## Caracterización temporal de las variables hidroclimáticas
+
+En esta subsección se muestra la evolución temporal de la variables extraídas de la colección TerraClimate para la cuenca baja del río Saldaña. Se debe anotar que el periodo de análisis planteado fue 2015-2025; sin embargo, la serie temporal presentada llega hasta octubre de
+
+2024, dada la disponibilidad de datos actualizados en la plataforma GEE en el momento del análisis.
+
+### Precipitación:
+
+El análisis de la serie temporal de precipitación para la cuenca baja del río Saldaña (**Figura 6.**) revela un régimen bimodal bien definido, característico de esta zona. Se observan dos periodos principales de mayores lluvias (abril-mayo y octubre-noviembre) intercalados con dos periodos de menores precipitaciones (enero-febrero y julio-agosto). Por otro lado, la precipitación mensual promedio de la cuenca osciló entre los 5mm/mes y lo 30 mm/mes. El pico máximo se registró para el año 2017, con un valor de 45.5 mm/mes, seguido del año 2024 (cercano a los 40 mm/mes).
+
+Se identifican reducciones notorias en la oferta hídrica, con valores que descienden de los 5 mm/mes. Resaltan los años 2016, 2019, 2020 y principios de 2023 y 2024, donde la precipitación fue mínima. A principios del año 2020, se capturó una de las barras más bajas de la serie (cerca de 1mm/mes), lo cual sugiere condiciones de estrés severo.
+
+![](figs/figura6.png){fig-align="center" width=85%}
+
+**Figura 6.** Precipitación mensual promedio (mm/mes) en la cuenca baja del río Saldaña calculada mediante la colección TerraClimate en GEE (periodo 2015-2024).
+
+### Relación oferta-demanda (Precipitación vs ETP vs ETA):
+
+La **Figura 7**, permite observar el contraste entre la oferta, que vendría siendo la precipitación y la demanda que es la evapotranspiración actual (ETA). Se identifica que la ETP mantienen una demanda atmosférica constante y elevada, superior a los 140mm/mes. Esto indica una demanda atmosférica de agua alta y estable, común en zonas tropicales. Sin embargo, la ETA es inferior a la potencial, sus valores oscilan entre 0 y 50 mm/mes. Aumenta ligeramente en los periodos de mayor precipitación. Esto demuestra que la disponibilidad de agua en el suelo
+
+es un factor limitante. Por otro lado, al estar la precipitación inferior a la ETP, representa el déficit hídrico mensual, notoriamente marcado en los periodos secos (junio-agosto).
+
+![](figs/figura7.png){fig-align="center" width=85%}
+
+**Figura 7.** Oferta versus demanda hídrica mensual (precipitación, evapotranspiración potencial y evapotranspiración actual) en la cuenca baja del río Saldaña (2015-2024).
+
+### Humedad del suelo:
+
+De acuerdo con la reflejado en la **Figura 8**, la humedad del suelo presentó valores entre los 10 mm y 120mm. Se reflejó varios picos máximos de humedad que coincidieron con los periodos de mayor precipitación, superando los 110 mm. En contraste, se observaron descensos durante los periodos secos. Destaca el año 2020, donde la humedad alcanzó valores bajos (por debajo de 30mm), al igual que lo reflejado en los valores de precipitación, lo que indica condiciones de estrés hídrico. Este comportamiento ratifica la fuerte dependencia entre la humedad del suelo en relación con los aportes de precipitación.
+
+![](figs/figura8.png){fig-align="center" width=85%}
+
+**Figura 8.** Humedad mensual del suelo durante el periodo comprendido entre 2015 y 2025.
+
+## Distribución espacial de los promedios multianuales
+
+La distribución espacial desde 2015 a 2025, mostró patrones heterogéneos en la cuenca baja del río Saldaña (**Figuras 9** y **10**). La precipitación presentó valores más altos en la parte occidental y noroccidental de la cuenca, disminuyendo gradualmente hacia el sector oriental (**Figura 9A**). La evapotranspiración potencial (ETP) mostró una distribución relativamente homogénea y elevada en toda la zona de estudio (**Figura 9B**), mientras que la evapotranspiración actual (ETA) fue menor, con los valores más altos concentrados en las zonas de mayor precipitación (**Figura 9C**).
+
+![](figs/figura9.png){fig-align="center" width=100%}
+
+**Figura 9.** Distribución espacial de los promedios multianuales. **A.** Precipitación (amarillo claro= menor precipitación, azul oscuro = mayor precipitación). **B.** Evapotranspiración Potencial (ETP) (amarillo claro = menor ETP, naranja- marrón oscuro= mayor ETP). **C.** Evapotranspiración Actual (ETA) (verde claro = menor ETA, verde oscuro = mayor ETA).
+
+*Nota: norte de la imagen y occidente a la izquierda de la imagen*.
+
+Como consecuencia, el balance hídrico resultó negativo en prácticamente toda la cuenca, con los valores más críticos (tonos más claros) concentrados en las zonas central y oriental (**Figura 10A**). El déficit hídrico presentó una distribución espacial heterogénea, alcanzando sus mayores magnitudes en las áreas central y nororiental de la cuenca (**Figura 10B**). Por su parte, la humedad del suelo mostró un patrón inverso al del déficit hídrico, registrando los valores más altos en la porción occidental y los más bajos en la zona central-oriental (**Figura 10C**).
+
+![](figs/figura10.png){fig-align="center" width=100%}
+
+**Figura 10.** Distribución espacial de los promedios multianuales. **A.** Balance hídrico (rojo = mayor déficit, azul = menor déficit). **B.** Déficit hídrico (rojo/naranja = mayor déficit). **C.** Humedad del suelo (azul oscuro = mayor humedad). *Nota: norte de la imagen y occidente a la izquierda de la imagen. *
+
+## Objetivo 2: Calcular balance hídrico y analizar la evolución temporal y espacial del índice SPEI
+## Evolución temporal del balance hídrico y del índice SPEI
+
+El transcurso temporal del balance hídrico y del índice SPEI mostró condiciones de déficit hídrico persistente en la cuenca baja del río Saldaña durante el periodo 2015-2024 (**Figura 11 y 12**). El balance hídrico (línea azul) se mantuvo predominantemente negativo a lo largo de casi todo el periodo, con valores que oscilaron principalmente entre -50 y -100 mm/mes. El déficit hídrico (línea roja) presentó picos pronunciados en varios años, especialmente notorios en 2016, 2020 y 2024. En contraste, la humedad del suelo (línea verde) mostró una alta variabilidad estacional, con descensos marcados durante los periodos secos.
+
+![](figs/figura11.png){fig-align="center" width=85%}
+
+**Figura 11.** Evolución temporal mensual del balance hídrico, déficit hídrico y humedad del suelo en la cuenca baja del río Saldaña (2015-2024).
+
+El índice SPEI de 6 meses (**Figura 12**) confirmó la presencia de condiciones de sequía moderada a severa en varios intervalos. Se observan periodos con valores negativos persistentes (por debajo de -1.0), particularmente intensos entre 2015- 2016 y finales de 2023.
+
+![](figs/figura12.png){fig-align="center" width=85%}
+
+**Figura 12.** Evolución temporal del índice de sequía SPEI a escala de 6 meses en la cuenca baja del río Saldaña (2015-2023).
+
+## Distribución espacial del balance hídrico y el índice SPEI
+
+La distribución espacial del balance hídrico promedio fue negativa en la mayor parte de la cuenca, con los valores más críticos (tonos más claros) concentrados en las zonas central y oriental (**Figura 13A**). El déficit hídrico mostró un patrón similar, alcanzando mayores intensidades en las mismas áreas (**Figura 13B**). La humedad del suelo presentó el patrón inverso, con mayores valores en la porción occidental (**Figura 13C**).
+
+![](figs/figura13.png){fig-align="center" width=100%}
+
+**Figura 13.** Distribución espacial de los promedios multianuales. **A.** Balance hídrico (rojo = mayor déficit, azul = menor déficit). **B.** Déficit hídrico (rojo/naranja = mayor déficit). **C.**
+
+Índice SPEI (rojo-naranja= sequía, blanco- amarillo=normal o neutro, azul= húmedo).
+
+*Nota: norte de la imagen y occidente a la izquierda de la imagen. *
+
+## Objetivo 3: Caracterizar la cobertura y contrastarla con las variables de balance hídrico y sequía
+La cobertura y uso del suelo en la cuenca baja del río Saldaña, según MapBiomas Colombia (Colección 3.0, año 2023), está dominada principalmente por pastizales y mosaicos de agricultura y pastizal (**Figura 14**).
+
+Al superponer la cobertura de suelo con los mapas de balance hídrico y SPEI, se observa una clara coincidencia espacial: las zonas con mayor déficit hídrico y valores más negativos de SPEI corresponden principalmente a áreas de pastizales y agricultura, mientras que las zonas con mejor balance hídrico coinciden con remanentes de cobertura vegetal más densa.
+
+![](figs/figura14.png){fig-align="center" width=100%}
+
+**Figura 14.** Distribución espacial de los promedios multianuales. **A.** Cobertura vegetal (verde oscuro= bosques, verde claro= formación forestal, marrón= mosaico de agricultura y pastizal, amarillo claro= agricultura, marrón claro= pastizal, azul= agua). **B.** Balance hídrico (rojo = mayor déficit, azul = menor déficit). **C.** Índice SPEI (rojo-naranja= sequía, blanco- amarillo=normal o neutro, azul= húmedo). *Nota: norte de la imagen y occidente a la izquierda de la imagen. *
+
+# Discusión
+
+Los resultados de este estudio indican que la cuenca baja del río Saldaña presenta un balance hídrico con valores negativos en todo el transcurso de la serie temporal desde el 2015 al 2024, así como en el mapa de distribución espacial de los promedios multianuales, las tonalidades en su mayoría fueron de color naranja claro, que denotaron un mayor déficit. Esto anterior se vio caracterizado por un alta demanda atmosférica reflejada en los valores de evapotranspiración potencial (ETP) que superaron la precipitación y la evapotranspiración actual (ETA).
+
+Este patrón concuerda con el régimen bimodal de precipitaciones característicos de esta zona, con picos máximos entre abril-mayo y octubre-noviembre, e intervalos secos entre enero- febrero y julio-agosto (IDEAM, 2017). Los años 2016, 2019-2020 y 2023-2024 se destacaron por presentar una baja oferta hídrica, lo que fue consistente con los valores más bajos de humedad del suelo y los picos más altos de déficit hídrico. Lo anterior, es consistente con los reportes previos que indican un aumento en la frecuencia e intensidad de periodos secos en el departamentos del Tolima asociados a la variabilidad climática y al fenómeno de El Niño (Ministerio de Ambiente y Desarrollo Sostenible, 2023).
+
+El índice SPEI a escala de 6 meses confirmó la ocurrencia de episodios de sequía moderada a severa (valores menores a -1.0) en varios intervalos, particularmente entre 2015-2016 y finales de 2023 (He et al., 2024; Ministerio de Ambiente y Desarrollo Sostenible, 2023). Estos periodos de sequía fueron consistentes con los momentos de mayor déficit hídrico y menor humedad edáfica.
+
+Espacialmente, se observó una heterogeneidad. La parte occidental y sur de la cuenca presentó mejores condiciones (mayor precipitación, mayor humedad del suelo y menor déficit), mientras que las zonas central y oriental mostraron los déficits más intensos. Esta variabilidad puede estar relacionada con gradientes altitudinales, orientación de las laderas y diferencias en la cobertura vegetal. Según ANLA (2021), la parte occidental y sur de la cuenca se encuentra cercana a áreas de resguardo indígena y zonas de uso sostenible y preservación, lo que podría contribuir a una mejor regulación hídrica. Por otro lado, la cuenca en su conjunto presenta grados de erosión del suelo entre moderado y severo, principalmente debido a la predominancia de actividades agrícolas.
+
+La comparación entre ETP y ETA evidencia que la disponibilidad de agua en el suelo es el principal factor limitante de la ETA en la cuenca. Aunque la ETP se mantiene alta y estable durante todo el año, la ETA solo aumenta significativamente cuando hay suficiente humedad edáfica, lo que genera un déficit hídrico actividades agropecuarias.
+
+Uno de los aportes principales de este estudio es el contraste entre la cobertura (MapBiomas Colombia 2023) y las variables de balance hídrico. Los resultados muestran que las áreas con mayor déficit hídrico y valores más negativos de SPEI coinciden principalmente con las clases de "mosaico de agricultura y pastizal" y "pastizales", que dominan la cuenca. Estos usos del suelo implican una alta demanda de agua (especialmente para el cultivo del arroz) (Kuenzer & Knauer, 2013; Martínez-Vega et al., 2025) y una menor capacidad de retención de humedad comparada con las zonas de bosque. Por el contrario, las zonas con mayor cobertura boscosa presentaron balances menos negativos y mayor humedad del suelo, lo que resalta el rol regulador de los bosques en el ciclo hídrico local.
+
+Estos hallazgos coinciden con estudios previos que han documentado cómo la conversión de bosques a usos agropecuarios aumenta la vulnerabilidad a la sequía en cuencas (Cao et al., 2019; Chartzoulakis & Bertaki, 2015; Shit et al., 2024). En el caso particular del Tolima,
+
+8.441 ha corresponden a distritos de riego activos que benefician principalmente al cultivo de arroz, un balance hídrico negativo persistente representa un riesgo importante para la productividad agrícola y la seguridad hídrica de la región.
+
+# Conclusiones
+
+-   Este estudio evidenció un balance hídrico negativo en la cuenca baja del río Saldaña entre 2015 y 2024, impulsado por una elevada evapotranspiración potencial que supera la precipitación disponible. Los episodios de sequía moderada a severa identificados mediante el SPEI de 6 meses coincidieron con periodos de baja precipitación y reducida humedad del suelo.
+
+-   Se observó una clara relación entre la cobertura del suelo y las condiciones hídricas: las áreas de mosaico de agricultura y pastizales presentaron los mayores déficits, mientras que los remanentes boscosos favorecieron una mejor regulación hídrica. Estos hallazgos resaltan la influencia del uso del suelo en la vulnerabilidad de la cuenca a la sequía.
+
+-   La aplicación de TerraClimate, SPEI y MapBiomas Colombia en Google Earth Engine demostró ser una herramienta útil para el monitoreo hidroclimático en regiones con escasa información de estaciones convencionales. Los resultados obtenidos proporcionan elementos clave para fortalecer la gestión del agua y la planificación agrícola en el distrito Usosaldaña y el departamento del Tolima.
+
+# Anexo 1.
+
+En el siguiente enlace se encuentra el repositorio de GEE en el que se encuentra albergado el código desarrollado en el presente estudio.
+
+[[https://code.earthengine.google.com/?accept_repo=users/valramirezlo/Informe1_Percepcio]{.underline}](https://code.earthengine.google.com/?accept_repo=users/valramirezlo/Informe1_Percepcion) [[n]{.underline}](https://code.earthengine.google.com/?accept_repo=users/valramirezlo/Informe1_Percepcion)
+
+# Referencias
+
+Abatzoglou, J. T., Dobrowski, S. Z., Parks, S. A., & Hegewisch, K. C. (2018). TerraClimate, a high-resolution global dataset of monthly climate and climatic water balance from 1958-2015. *Scientific Data*, *5*. [[https://doi.org/10.1038/sdata.2017.191]{.underline}](https://doi.org/10.1038/sdata.2017.191)
+
+Agrosavia. (2021). *Modelo productivo para el cultivo de arroz en el valle cálido del Alto Magdalena*. Editorial Agrosavia. [[https://doi.org/10.21930/agrosavia.model.7404511]{.underline}](https://www.google.com/search?q=https%3A//doi.org/10.21930/agrosavia.model.7404511)
+
+Allen, R. G., Pereira, L. S., Raes, D., Smith, M., & W, a B. (1998). Crop evapotranspiration
+
+\- Guidelines for computing crop water requirements - FAO Irrigation and drainage paper
+
+56\. *Irrigation and Drainage*. [[https://doi.org/10.1016/j.eja.2010.12.001]{.underline}](https://doi.org/10.1016/j.eja.2010.12.001)
+
+Autoridad Nacional de Licencias Ambientales (ANLA). (2021). Reporte de análisis regional del Centro y Sur Tolima (RAR-CST). [[https://www.anla.gov.co/documentos/biblioteca/06-05-2021-anla-reporte-analisis-]{.underline}](https://www.anla.gov.co/documentos/biblioteca/06-05-2021-anla-reporte-analisis-regional-centro-y-sur-del-tolima.pdf) [[regional-centro-y-sur-del-tolima.pdf]{.underline}](https://www.anla.gov.co/documentos/biblioteca/06-05-2021-anla-reporte-analisis-regional-centro-y-sur-del-tolima.pdf)
+
+Beguería, S., Vicente-Serrano, S. M., Reig-Gracia, F., & Latorre Garcés, B. (2024). SPEIbase v.2.10: A comprehensive tool for drought monitoring and research \[Dataset\]. DIGITAL.CSIC. [[https://doi.org/10.20350/digitalCSIC/15470]{.underline}](https://doi.org/10.20350/digitalCSIC/15470)
+
+Cáceres, M. De, Martínez-Vilalta, J., Coll, L., Llorens, P., Casals, P., Poyatos, R., Pausas, J. G., & Brotons, L. (2015). Coupling a water balance model with forest inventory data to predict drought stress: The role of forest structural changes vs. climate changes. *Agricultural and Forest Meteorology*, *213*.
+
+https://doi.org/10.1016/j.agrformet.2015.06.012
+
+Cao, Y., Chen, S., Wang, L., Zhu, B., Lu, T., & Yu, Y. (2019). An agricultural drought index for assessing droughts using awater balance method: A case study in Jilin Province, Northeast China. *Remote Sensing*, *11*(9). https://doi.org/10.3390/rs11091066
+
+Chartzoulakis, K., & Bertaki, M. (2015). Sustainable Water Management in Agriculture under Climate Change. *Agriculture and Agricultural Science Procedia*, *4*.
+
+[[https://doi.org/10.1016/j.aaspro.2015.03.011]{.underline}](https://doi.org/10.1016/j.aaspro.2015.03.011)
+
+Corporación Autónoma Regional del Tolima (CORTOLIMA). (2010). Plan de ordenación y manejo de la cuenca hidrográfica de la quebrada Guanábano -- cuenca río Saldaña - Tolima. [[https://cortolima.gov.co/planes-y-programas/gestion-integral-del-recurso-]{.underline}](https://cortolima.gov.co/planes-y-programas/gestion-integral-del-recurso-hidrico/3511-pomca-del-rio-mediosaldana) [[hidrico/3511-pomca-del-rio-mediosaldana]{.underline}](https://cortolima.gov.co/planes-y-programas/gestion-integral-del-recurso-hidrico/3511-pomca-del-rio-mediosaldana)
+
+He, Y., Xie, Y., Liu, J., Hu, Z., Liu, J., Cheng, Y., Zhang, L., Wang, Z., & Li, M. (2024).
+
+Generation of 1 km high resolution Standardized precipitation evapotranspiration Index for drought monitoring over China using Google Earth Engine. *International Journal of Applied Earth Observation and Geoinformation*, *135*.
+
+[[https://doi.org/10.1016/j.jag.2024.104296]{.underline}](https://doi.org/10.1016/j.jag.2024.104296)
+
+IDEAM. (2017). Atlas Climatológico de Colombia. IDEAM-Instituto de Hidrología, Meteorología y Estudios Ambientales - Subdirección de Ecosistemas e Información Ambiental-Grupo de suelos y Tierras.
+
+Jian, S., Zhao, C., Fang, S., & Yu, K. (2015). Effects of different vegetation restoration on soil water storage and water balance in the Chinese Loess Plateau. *Agricultural and Forest Meteorology*, *206*. https://doi.org/10.1016/j.agrformet.2015.03.009
+
+Kuenzer, C., & Knauer, K. (2013). Remote sensing of rice crop areas. In *International Journal of Remote Sensing* (Vol. 34, Number 6). [[https://doi.org/10.1080/01431161.2012.738946]{.underline}](https://doi.org/10.1080/01431161.2012.738946)
+
+MapBiomas Colombia Project. (2024). Colección 3.0 de mapas anuales de cobertura y uso del suelo de Colombia. Fundación Gaia Amazonas. [[https://colombia.mapbiomas.org/]{.underline}](https://colombia.mapbiomas.org/)
+
+Martínez-Vega, R. R., Ouazaa, S., De Swaef, T., Chaali, N., Garré, S., Jaramillo-Barrios, C. I., & Moreno Fonseca, L. P. (2025). Exploring non-conventional irrigation methods and drone-based monitoring to enhance water use efficiency: a case of rice cultivation in Colombia. *Irrigation Science*, *43*(6). https://doi.org/10.1007/s00271-025-01025-w
+
+Ministerio de Ambiente y Desarrollo Sostenible. (2023). Estudio nacional del agua 2022. In
+
+*Ministerio de Medio Ambiente*.
+
+Poortinga, A., Nguyen, Q., Thwal, N.S., & Nicolau, A.P. (2024). Water balance and drought. In J. A. Cardille, M. A. Crowley, D. Saah, & N. E. Clinton (Eds.), Cloud-based remote sensing with Google Earth Engine (pp. 953--983). Springer. [[https://doi.org/10.1007/978-]{.underline}](https://doi.org/10.1007/978-3-031-26588-4_44) [[3-031-26588-4_44]{.underline}.](https://doi.org/10.1007/978-3-031-26588-4_44)
+
+Riaño Aramendiz, J y Artunduaga Triviño, E. (2022). Caracterización hidrológica de la cuenca del rio Saldaña bajo escenarios de cambio climático usando Hydro-BID. Universidad de Ibagué.
+
+Shit, P. K., Adhikary, P. P., Bera, B., & Rajput, V. D. (2024). Resilient and sustainable water management in agriculture. In *Environmental Science and Pollution Research* (Vol. 31, Number 41). https://doi.org/10.1007/s11356-024-34003-4
+
+Thornthwaite, C. W. (1948). An Approach toward a Rational Classification of Climate: Geographical Review, Vol. 38, No. 1. (Jan., 1948), pp. 55-94. *Journal of Nuclear*
+
+*Materials*, *41*(2).
+
+Vicente-Serrano, S. M., Beguería, S., & López-Moreno, J. I. (2010). A multiscalar drought index sensitive to global warming: The standardized precipitation evapotranspiration index. *Journal of Climate*, *23*(7). https://doi.org/10.1175/2009JCLI2909.1
+
+Yousefi, E., Sayadi, M. H., & Chamanehpour, E. (2022). Google Earth Engine platform to calculate the hydrometeorology and hydrological water balance of wetlands in arid areas and predict future changes. *Journal of Applied Research in Water and Wastewater*, *9*(1). https://doi.org/10.22126/arww.2022.7033.1228
